@@ -169,26 +169,27 @@ public void OnWeaponSpawnedPost(int entity)
 public Action OnWeaponEquip(int client, int entity)
 {
 	if(!IsValidEntity(entity))
-		return;
+		return Plugin_Continue;
 
 	int HammerID = GetEntProp(entity, Prop_Data, "m_iHammerID");
 	// Should not be cleaned since it's a map spawned weapon
 	if(HammerID)
-		return;
+		return Plugin_Continue;
 
 	// Weapon should not be cleaned anymore
 	RemoveWeapon(EntIndexToEntRef(entity));
+	return Plugin_Continue;
 }
 
 public Action OnWeaponDrop(int client, int entity)
 {
 	if(!IsValidEntity(entity))
-		return;
+		return Plugin_Continue;
 
 	int HammerID = GetEntProp(entity, Prop_Data, "m_iHammerID");
 	// Should not be cleaned since it's a map spawned weapon
 	if(HammerID)
-		return;
+		return Plugin_Continue;
 
 	// Kill all dropped weapons during mp_freezetime
 	// or if no weapons are allowed at all
@@ -196,11 +197,12 @@ public Action OnWeaponDrop(int client, int entity)
 	{
 		// Kill it
 		AcceptEntityInput(entity, "Kill");
-		return;
+		return Plugin_Continue;
 	}
 
 	// Weapon should be cleaned again
 	InsertWeapon(entity);
+	return Plugin_Continue;
 }
 
 bool InsertWeapon(int entity)
@@ -296,9 +298,11 @@ public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcas
 		G_WeaponArray[i][1] = 0;
 	}
 	g_RealRoundStartedTime = GetTime() + GetConVarInt(FindConVar("mp_freezetime"));
+	return Plugin_Continue;
 }
 
 public Action Timer_CleanupWeapons(Handle timer)
 {
 	CheckWeapons();
+	return Plugin_Continue;
 }
