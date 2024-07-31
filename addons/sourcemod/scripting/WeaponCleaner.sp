@@ -15,8 +15,6 @@ int g_RealRoundStartedTime;
 int g_MaxWeapons;
 int g_MaxWeaponLifetime;
 
-bool g_bEnableCSGOFix;
-
 #define MAX_WEAPONS MAXPLAYERS
 int G_WeaponArray[MAX_WEAPONS][2];
 
@@ -26,14 +24,12 @@ public Plugin myinfo =
 	name 			= "WeaponCleaner",
 	author 			= "BotoX",
 	description 	= "Clean unneeded weapons",
-	version 		= "2.2.1",
+	version 		= "2.2.2",
 	url 			= ""
 };
 
 public void OnPluginStart()
 {
-	g_bEnableCSGOFix = view_as<bool>(GetEngineVersion() == Engine_CSGO);
-
 	g_CVar_MaxWeapons = CreateConVar("sm_weaponcleaner_max", "5", "The maximum amount of weapons allowed in the game.", 0, true, 0.0, true, MAX_WEAPONS - 1.0);
 	g_MaxWeapons = g_CVar_MaxWeapons.IntValue;
 	g_CVar_MaxWeapons.AddChangeHook(OnConVarChanged);
@@ -142,13 +138,7 @@ public void OnEntityDestroyed(int entity)
 
 public void OnWeaponSpawned(int entity)
 {
-	if (g_bEnableCSGOFix)
-	{
-		SDKUnhook(entity, SDKHook_Spawn, OnWeaponSpawned);
-
-		RequestFrame(OnWeaponSpawnedPost, entity);
-	}
-	else OnWeaponSpawnedPost(entity);
+	OnWeaponSpawnedPost(entity);
 }
 
 public void OnWeaponSpawnedPost(int entity)
