@@ -24,7 +24,7 @@ public Plugin myinfo =
 	name 			= "WeaponCleaner",
 	author 			= "BotoX",
 	description 	= "Clean unneeded weapons",
-	version 		= "2.2.2",
+	version 		= "2.2.3",
 	url 			= ""
 };
 
@@ -104,9 +104,6 @@ public void OnClientPutInServer(int client)
 
 public void OnClientDisconnect(int client)
 {
-	SDKUnhook(client, SDKHook_WeaponDropPost, OnWeaponDrop);
-	SDKUnhook(client, SDKHook_WeaponEquipPost, OnWeaponEquip);
-
 	if(!IsClientInGame(client))
 		return;
 
