@@ -24,7 +24,7 @@ public Plugin myinfo =
 	name 			= "WeaponCleaner",
 	author 			= "BotoX",
 	description 	= "Clean unneeded weapons",
-	version 		= "2.2.3",
+	version 		= "2.2.4",
 	url 			= ""
 };
 
@@ -84,16 +84,13 @@ public void OnConVarChanged(ConVar convar, const char[] oldValue, const char[] n
 
 public void OnMapStart()
 {
-	if(g_hTimer != INVALID_HANDLE && CloseHandle(g_hTimer))
-		g_hTimer = INVALID_HANDLE;
-
+	delete g_hTimer;
 	g_hTimer = CreateTimer(TIMER_INTERVAL, Timer_CleanupWeapons, INVALID_HANDLE, TIMER_REPEAT);
 }
 
 public void OnMapEnd()
 {
-	if(g_hTimer != INVALID_HANDLE && CloseHandle(g_hTimer))
-		g_hTimer = INVALID_HANDLE;
+	delete g_hTimer;
 }
 
 public void OnClientPutInServer(int client)
