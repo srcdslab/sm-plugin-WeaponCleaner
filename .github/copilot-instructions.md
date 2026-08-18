@@ -5,7 +5,7 @@ This repository contains a single SourcePawn plugin called "WeaponCleaner" for S
 
 **Current Version:** 2.2.2  
 **Target SourceMod Version:** 1.11.0+ (minimum 1.12+ recommended)  
-**Build Tool:** sourceknight
+**Build Tool:** GitHub Actions (spcomp via rumblefrog/setup-sp)
 
 ## Project Structure
 ```
@@ -15,7 +15,6 @@ This repository contains a single SourcePawn plugin called "WeaponCleaner" for S
 │   └── dependabot.yml            # Dependency management
 ├── addons/sourcemod/scripting/
 │   └── WeaponCleaner.sp          # Main plugin source file
-├── sourceknight.yaml             # Build configuration
 └── .gitignore                    # Git ignore rules
 ```
 
@@ -62,21 +61,19 @@ This plugin implements a weapon management system with:
 
 ## Build System
 
-### sourceknight Configuration
-The project uses sourceknight for building. Key configuration in `sourceknight.yaml`:
-- **Dependencies:** SourceMod 1.11.0-git6934 (consider updating to 1.12+)
-- **Output:** Compiled plugins go to `/addons/sourcemod/plugins`
+### GitHub Actions Configuration
+The project is built via native GitHub Actions. Key configuration in `.github/workflows/ci.yml`:
+- **Compiler:** `rumblefrog/setup-sp@v1.3.1`, SourceMod/SourcePawn 1.12.x
+- **Build command:** `spcomp -i include -o ../plugins/WeaponCleaner.smx WeaponCleaner.sp`
+- **Output:** Compiled plugins go to `addons/sourcemod/plugins`
 - **Target:** WeaponCleaner plugin
 
 ### Build Commands
-```bash
-sourceknight build          # Build the plugin
-sourceknight clean          # Clean build artifacts
-```
+Building happens automatically in CI; to compile locally, install `spcomp` (SourcePawn compiler) matching SourceMod 1.12.x and run it against `addons/sourcemod/scripting/WeaponCleaner.sp`.
 
 ### CI/CD Pipeline
-- **Platform:** Ubuntu 24.04
-- **Build Tool:** maxime1907/action-sourceknight@v1
+- **Platform:** ubuntu-latest
+- **Build Tool:** rumblefrog/setup-sp (spcomp)
 - **Artifacts:** Automatic packaging and release creation
 - **Triggers:** Push, pull request, manual dispatch
 
