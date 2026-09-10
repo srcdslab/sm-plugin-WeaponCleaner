@@ -10,6 +10,7 @@ Handle g_hTimer = INVALID_HANDLE;
 
 ConVar g_CVar_MaxWeapons;
 ConVar g_CVar_WeaponLifetime;
+ConVar g_CVar_FreezeTime;
 
 int g_RealRoundStartedTime;
 int g_MaxWeapons;
@@ -24,7 +25,7 @@ public Plugin myinfo =
 	name 			= "WeaponCleaner",
 	author 			= "BotoX",
 	description 	= "Clean unneeded weapons",
-	version 		= "2.2.4",
+	version 		= "2.2.5",
 	url 			= ""
 };
 
@@ -38,15 +39,29 @@ public void OnPluginStart()
 	g_MaxWeaponLifetime = g_CVar_WeaponLifetime.IntValue;
 	g_CVar_WeaponLifetime.AddChangeHook(OnConVarChanged);
 
+	g_CVar_FreezeTime = FindConVar("mp_freezetime");
+
 	HookEvent("round_start", Event_RoundStart);
 
 	AutoExecConfig(true);
+
+	// Single repeating timer for the plugin's whole lifetime.
+	// Created here (not in OnMapStart) so it also runs when the plugin is loaded late.
+	delete g_hTimer;
+	g_hTimer = CreateTimer(TIMER_INTERVAL, Timer_CleanupWeapons, INVALID_HANDLE, TIMER_REPEAT);
 
 	for(int client = 1; client <= MaxClients; client++)
 	{
 		if(IsClientInGame(client))
 			OnClientPutInServer(client);
 	}
+}
+
+public void OnConfigsExecuted()
+{
+	// Read the effective values once the config file has actually been executed.
+	g_MaxWeapons = g_CVar_MaxWeapons.IntValue;
+	g_MaxWeaponLifetime = g_CVar_WeaponLifetime.IntValue;
 }
 
 public void OnConVarChanged(ConVar convar, const char[] oldValue, const char[] newValue)
@@ -82,13 +97,7 @@ public void OnConVarChanged(ConVar convar, const char[] oldValue, const char[] n
 	}
 }
 
-public void OnMapStart()
-{
-	delete g_hTimer;
-	g_hTimer = CreateTimer(TIMER_INTERVAL, Timer_CleanupWeapons, INVALID_HANDLE, TIMER_REPEAT);
-}
-
-public void OnMapEnd()
+public void OnPluginEnd()
 {
 	delete g_hTimer;
 }
@@ -199,6 +208,10 @@ bool InsertWeapon(int entity)
 	// Try to find a free slot
 	for(int i = 0; i < g_MaxWeapons; i++)
 	{
+		// Already tracking this weapon, don't insert it twice
+		if(G_WeaponArray[i][0] == entref)
+			return true;
+
 		if(G_WeaponArray[i][0])
 			continue;
 
@@ -281,7 +294,11 @@ public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcas
 		G_WeaponArray[i][0] = 0;
 		G_WeaponArray[i][1] = 0;
 	}
-	g_RealRoundStartedTime = GetTime() + GetConVarInt(FindConVar("mp_freezetime"));
+	int freezeTime = 0;
+	if(g_CVar_FreezeTime != null)
+		freezeTime = g_CVar_FreezeTime.IntValue;
+
+	g_RealRoundStartedTime = GetTime() + freezeTime;
 	return Plugin_Continue;
 }
 

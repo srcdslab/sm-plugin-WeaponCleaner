@@ -3,19 +3,22 @@
 ## Repository Overview
 This repository contains a single SourcePawn plugin called "WeaponCleaner" for SourceMod, designed to manage weapon cleanup on Source engine game servers. The plugin prevents server performance issues by limiting the number of dropped weapons and automatically removing old weapons.
 
-**Current Version:** 2.2.2  
-**Target SourceMod Version:** 1.11.0+ (minimum 1.12+ recommended)  
+**Current Version:** 2.2.5  
+**Target SourceMod Version:** 1.12.0+  
 **Build Tool:** GitHub Actions (spcomp via rumblefrog/setup-sp)
 
 ## Project Structure
 ```
 /
 ├── .github/
-│   ├── workflows/ci.yml          # CI/CD pipeline
-│   └── dependabot.yml            # Dependency management
+│   ├── workflows/
+│   │   ├── ci.yml                    # CI/CD pipeline (build, tag, release)
+│   │   └── dependabot-auto-merge.yml # Auto-merge Dependabot PRs
+│   ├── copilot-instructions.md       # This file
+│   └── dependabot.yml                # Dependency management
 ├── addons/sourcemod/scripting/
-│   └── WeaponCleaner.sp          # Main plugin source file
-└── .gitignore                    # Git ignore rules
+│   └── WeaponCleaner.sp              # Main plugin source file
+└── .gitignore                        # Git ignore rules
 ```
 
 ## Code Style & Conventions
@@ -38,7 +41,7 @@ Follow these established patterns used in this repository:
 - Descriptive variable and function names
 
 ### Modern SourcePawn Practices
-- Use `delete` instead of `CloseHandle()` - **this repo needs modernization**
+- Use `delete` instead of `CloseHandle()` (no `INVALID_HANDLE` guard needed - `delete` handles null)
 - Use entity references (`EntIndexToEntRef`) for entity storage
 - Prefer methodmaps over legacy Handle-based code
 - All SQL operations must be asynchronous when implemented
@@ -133,23 +136,14 @@ sm_weaponcleaner_lifetime <seconds> // Weapon lifetime (0=infinite)
 ## Modernization Opportunities
 When making changes, consider updating legacy code:
 
-1. **Replace CloseHandle() with delete:**
-   ```sourcepawn
-   // Current (legacy)
-   if(g_hTimer != INVALID_HANDLE && CloseHandle(g_hTimer))
-       g_hTimer = INVALID_HANDLE;
-   
-   // Modern approach
-   delete g_hTimer;
-   ```
+1. **Handle storage:** `g_hTimer` is still declared as a raw `Handle = INVALID_HANDLE`;
+   the `= INVALID_HANDLE` initializer is redundant with `delete`.
 
-2. **Use methodmaps for handles:**
-   ```sourcepawn
-   // Modern timer creation
-   g_hTimer = CreateTimer(TIMER_INTERVAL, Timer_CleanupWeapons, INVALID_HANDLE, TIMER_REPEAT);
-   ```
+2. **Convert `G_WeaponArray` to a methodmap `ArrayList`** if the tracking logic ever
+   needs to grow beyond the current fixed-size ordered list.
 
-3. **Consider ArrayList for dynamic weapon tracking** (if needed for expansion)
+3. **Cache game ConVars once** (`FindConVar` in `OnPluginStart`) instead of looking
+   them up repeatedly at runtime.
 
 ## Common Issues & Solutions
 
@@ -164,7 +158,7 @@ When making changes, consider updating legacy code:
 - **Performance:** Monitor server tick rate impact during high weapon activity
 
 ## Additional Notes
-- This plugin is production-ready and stable (version 2.2.2)
+- This plugin is production-ready and stable (version 2.2.5)
 - Focus on minimal, surgical changes to maintain stability
 - The plugin handles edge cases well (freeze time, map weapons, client disconnects)
 - Consider backward compatibility when making API changes
