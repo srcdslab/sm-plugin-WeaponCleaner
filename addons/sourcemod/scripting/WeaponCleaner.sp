@@ -60,41 +60,47 @@ public void OnPluginStart()
 public void OnConfigsExecuted()
 {
 	// Read the effective values once the config file has actually been executed.
-	g_MaxWeapons = g_CVar_MaxWeapons.IntValue;
+	ApplyMaxWeapons(g_CVar_MaxWeapons.IntValue);
 	g_MaxWeaponLifetime = g_CVar_WeaponLifetime.IntValue;
+	CheckWeapons();
 }
 
 public void OnConVarChanged(ConVar convar, const char[] oldValue, const char[] newValue)
 {
 	if(convar == g_CVar_MaxWeapons)
 	{
-		if(StringToInt(newValue) < StringToInt(oldValue))
-		{
-			// Need to shrink list and kill items
-			int d = StringToInt(oldValue) - StringToInt(newValue);
-
-			// Kill items that don't have space anymore
-			for(int i = 0; d && i < g_MaxWeapons; i++)
-			{
-				if(!G_WeaponArray[i][0])
-					continue;
-
-				// Kill it
-				if(KillWeapon(G_WeaponArray[i][0]))
-				{
-					// Move index backwards (since the list was modified by removing it)
-					i--;
-					d--;
-				}
-			}
-		}
-		g_MaxWeapons = StringToInt(newValue);
+		ApplyMaxWeapons(StringToInt(newValue));
 	}
 	else if(convar == g_CVar_WeaponLifetime)
 	{
 		g_MaxWeaponLifetime = StringToInt(newValue);
 		CheckWeapons();
 	}
+}
+
+void ApplyMaxWeapons(int newMax)
+{
+	if(newMax < g_MaxWeapons)
+	{
+		// Need to shrink list and kill items
+		int d = g_MaxWeapons - newMax;
+
+		// Kill items that don't have space anymore
+		for(int i = 0; d && i < g_MaxWeapons; i++)
+		{
+			if(!G_WeaponArray[i][0])
+				continue;
+
+			// Kill it
+			if(KillWeapon(G_WeaponArray[i][0]))
+			{
+				// Move index backwards (since the list was modified by removing it)
+				i--;
+				d--;
+			}
+		}
+	}
+	g_MaxWeapons = newMax;
 }
 
 public void OnPluginEnd()
@@ -294,6 +300,10 @@ public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcas
 		G_WeaponArray[i][0] = 0;
 		G_WeaponArray[i][1] = 0;
 	}
+	// Retry the lookup if it wasn't available yet at OnPluginStart (e.g. late load).
+	if(g_CVar_FreezeTime == null)
+		g_CVar_FreezeTime = FindConVar("mp_freezetime");
+
 	int freezeTime = 0;
 	if(g_CVar_FreezeTime != null)
 		freezeTime = g_CVar_FreezeTime.IntValue;
