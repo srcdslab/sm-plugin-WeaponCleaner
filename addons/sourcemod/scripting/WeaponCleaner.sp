@@ -45,11 +45,6 @@ public void OnPluginStart()
 
 	AutoExecConfig(true);
 
-	// Single repeating timer for the plugin's whole lifetime.
-	// Created here (not in OnMapStart) so it also runs when the plugin is loaded late.
-	delete g_hTimer;
-	g_hTimer = CreateTimer(TIMER_INTERVAL, Timer_CleanupWeapons, INVALID_HANDLE, TIMER_REPEAT);
-
 	for(int client = 1; client <= MaxClients; client++)
 	{
 		if(IsClientInGame(client))
@@ -103,7 +98,13 @@ void ApplyMaxWeapons(int newMax)
 	g_MaxWeapons = newMax;
 }
 
-public void OnPluginEnd()
+public void OnMapStart()
+{
+	delete g_hTimer;
+	g_hTimer = CreateTimer(TIMER_INTERVAL, Timer_CleanupWeapons, INVALID_HANDLE, TIMER_REPEAT);
+}
+
+public void OnMapEnd()
 {
 	delete g_hTimer;
 }
