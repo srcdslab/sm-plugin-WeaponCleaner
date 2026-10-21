@@ -6,7 +6,7 @@
 #pragma newdecls required
 
 #define TIMER_INTERVAL 1.0
-Handle g_hTimer = INVALID_HANDLE;
+Handle g_hTimer = null;
 
 ConVar g_CVar_MaxWeapons;
 ConVar g_CVar_WeaponLifetime;
@@ -25,7 +25,7 @@ public Plugin myinfo =
 	name 			= "WeaponCleaner",
 	author 			= "BotoX",
 	description 	= "Clean unneeded weapons",
-	version 		= "2.2.5",
+	version 		= "2.2.6",
 	url 			= ""
 };
 
@@ -100,7 +100,7 @@ void ApplyMaxWeapons(int newMax)
 public void OnMapStart()
 {
 	delete g_hTimer;
-	g_hTimer = CreateTimer(TIMER_INTERVAL, Timer_CleanupWeapons, INVALID_HANDLE, TIMER_REPEAT);
+	g_hTimer = CreateTimer(TIMER_INTERVAL, Timer_CleanupWeapons, _, TIMER_REPEAT);
 }
 
 public void OnMapEnd()
