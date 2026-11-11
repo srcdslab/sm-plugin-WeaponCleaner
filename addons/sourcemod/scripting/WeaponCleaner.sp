@@ -25,7 +25,7 @@ public Plugin myinfo =
 	name 			= "WeaponCleaner",
 	author 			= "BotoX",
 	description 	= "Clean unneeded weapons",
-	version 		= "2.2.6",
+	version 		= "2.2.7",
 	url 			= ""
 };
 
